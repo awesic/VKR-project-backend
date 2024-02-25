@@ -24,4 +24,6 @@ echo "Directions imported"
 python manage.py import_departments
 echo "Departments imported"
 
+gunicorn config.wsgi
+
 exec "$@"
