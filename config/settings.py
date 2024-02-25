@@ -1,24 +1,19 @@
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = bool(os.getenv("DEBUG", default=0))
+DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "*").split(' ')
-
-# if "CSRF_TRUSTED_ORIGINS" in os.environ:
-#     CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(' ')
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(' ')
 
 # Application definition
 
@@ -40,29 +35,13 @@ INSTALLED_APPS = [
     "main.apps.MainConfig",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = [
-    'http://10.4.134.142:5173',
-    'http://192.168.64.1:5173',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost',
-    'http://127.0.0.1', 
-    'https://gxf7s1rd-5173.euw.devtunnels.ms',
-]
-CORS_ALLOW_HEADERS = ["Content-Type", "X-CSRFToken"]
-CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-CORS_ALLOW_CREDENTIALS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(' ')
+CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS").split(' ')
+CORS_EXPOSE_HEADERS = os.environ.get("CORS_EXPOSE_HEADERS").split(' ')
+CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "False").lower() == "true"
 
-CORS_ALLOWED_ORIGINS = [
-    'http://10.4.134.142:5173',
-    'http://192.168.64.1:5173',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-    'http://localhost',
-    'http://127.0.0.1',
-    'https://gxf7s1rd-5173.euw.devtunnels.ms'
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(' ')
 
 # CSRF_COOKIE_SAMESITE = "None"
 # SESSION_COOKIE_SAMESITE = "None"
@@ -70,9 +49,9 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 SESSION_COOKIE_HTTPONLY = True
 
-# PROD ONLY
-# CSRF_COOKIE_SECURE = True
-# SESSION_COOKIE_SECURE = True
+if os.environ.get("PRODUCTION") is True:
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -111,22 +90,22 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("POSTGRES_DB", "db.sqlite3"),
-        "USER": os.getenv("POSTGRES_USER", "user"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "password"),
-        "HOST": os.getenv("POSTGRES_HOST", "localhost"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
-    }
-}
 # DATABASES = {
 #     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
+#         "ENGINE": os.environ.get("ENGINE", "django.db.backends.sqlite3"),
+#         "NAME": os.environ.get("POSTGRES_DB", "db.sqlite3"),
+#         "USER": os.environ.get("POSTGRES_USER", "user"),
+#         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
+#         "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+#         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
 #     }
 # }
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+}
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
@@ -188,27 +167,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
     ]
 }
-
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(seconds=5),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
-#     "ROTATE_REFRESH_TOKENS": True,
-#     "BLACKLIST_AFTER_ROTATION": True,
-#     "UPDATE_LAST_LOGIN": False,
-
-#     "ALGORITHM": "HS256",
-#     "SIGNING_KEY": os.getenv("SECRET_KEY"),
-
-#     "AUTH_HEADER_TYPES": ("JWT", "Bearer"),
-#     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
-#     "USER_ID_FIELD": "id",
-#     "USER_ID_CLAIM": "user_id",
-
-#     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
-# }
