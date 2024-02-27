@@ -36,12 +36,13 @@ INSTALLED_APPS = [
 ]
 
 # CORS_ALLOW_ALL_ORIGINS = True
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(' ')
-CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS").split(' ')
 CORS_EXPOSE_HEADERS = os.environ.get("CORS_EXPOSE_HEADERS").split(' ')
 CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "False").lower() == "true"
 
+CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS").split(' ')
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(' ')
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(' ')
+CORS_ALLOWED_WITELIST = os.environ.get('CORS_ALLOWED_WITELIST').split(' ')
 
 # CSRF_COOKIE_SAMESITE = "None"
 # SESSION_COOKIE_SAMESITE = "None"
