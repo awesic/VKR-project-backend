@@ -49,7 +49,7 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 SESSION_COOKIE_HTTPONLY = False
 
-if os.environ.get("PRODUCTION") is True:
+if os.environ.get("PRODUCTION").lower() == "true":
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
 
