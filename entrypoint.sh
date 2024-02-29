@@ -12,17 +12,17 @@ then
 fi
 
 # python manage.py flush --no-input
-python manage.py makemigrations
-python manage.py migrate
+# python manage.py makemigrations
+# python manage.py migrate
 
-python manage.py import_institutes
-echo "Institutes imported"
+# python manage.py import_institutes
+# echo "Institutes imported"
 
-python manage.py import_directions
-echo "Directions imported"
+# python manage.py import_directions
+# echo "Directions imported"
 
-python manage.py import_departments
-echo "Departments imported"
+# python manage.py import_departments
+# echo "Departments imported"
 
 gunicorn config.wsgi
 
