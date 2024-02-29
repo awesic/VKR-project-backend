@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from secrets import token_hex
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -8,16 +9,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.environ.get("SECRET_KEY", token_hex(32))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(' ')
 
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,17 +42,17 @@ INSTALLED_APPS = [
 # CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS").split(' ')
 CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "False").lower() == "true"
 
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(' ')
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(' ')
-SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN').split(' ')
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://localhost').split(' ')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost').split(' ')
+SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost').split(' ')
 # CORS_ALLOWED_WITELIST = os.environ.get('CORS_ALLOWED_WITELIST').split(' ')
-# CSRF_COOKIE_SAMESITE = "None"
-# SESSION_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_HTTPONLY = False
 CSRF_USE_SESSIONS = False
 SESSION_COOKIE_HTTPONLY = False
 
-if os.environ.get("PRODUCTION").lower() == "true":
+if os.environ.get("PRODUCTION", 'False').lower() == "true":
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
 
