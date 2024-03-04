@@ -47,11 +47,10 @@ CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "True").lower(
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://localhost http://127.0.0.1:8000').split(' ')
 CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost http://127.0.0.1:8000').split(' ')
 # SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', 'localhost 127.0.0.1:8000 127.0.0.1').split(' ')
-# CORS_ALLOWED_WITELIST = os.environ.get('CORS_ALLOWED_WITELIST').split(' ')
+CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
 CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_HTTPONLY = True
-CSRF_USE_SESSIONS = False
+# SESSION_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_HTTPONLY = True
 
 if os.environ.get("PRODUCTION", 'False').lower() == "true":
