@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser
@@ -25,6 +26,7 @@ class User(AbstractUser):
         STUDENT = 'student', 'Студент'
 
     username = None
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     email = models.EmailField(_("email address"), unique=True)
     patronymic = models.CharField(_("patronymic"), max_length=150, blank=True)
     role = models.CharField(_("role"), max_length=50, choices=Roles.choices, default=Roles.ADMIN)
@@ -50,6 +52,7 @@ class Teacher(User):
     """
     Custom teacher model that create teachers additional fields
     """
+    # id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     institute = models.ForeignKey(Institute, related_name='+', on_delete=models.SET_NULL, blank=True, null=True)
     department = models.ForeignKey(
         Department, related_name='+', on_delete=models.SET_NULL, max_length=150, blank=True, null=True)
@@ -57,7 +60,8 @@ class Teacher(User):
     # students = ArrayField(models.CharField(max_length=150), blank=True, default=list)
 
     class Meta:
-        verbose_name = 'Teacher'
+        verbose_name = 'Преподаватель'
+        verbose_name_plural = 'Преподаватели'
 
     def __str__(self):
         return f'{self.email}'
@@ -76,6 +80,7 @@ class Student(User):
         DECORATION_FQW = 'decorator_fqw', _('Оформление ВКР')
         FINISHED = 'finished', _('Завершено')
 
+    # id = models.UUIDField(default=uuid.uuid4, primary_key=True, unique=True, editable=False)
     institute = models.ForeignKey(Institute, related_name='+', on_delete=models.SET_NULL, blank=True, null=True)
     direction = models.ForeignKey(Direction, related_name='+', on_delete=models.SET_NULL, max_length=150,
                                   blank=True, null=True)
@@ -91,7 +96,8 @@ class Student(User):
                               max_length=50, choices=Status.choices, default=Status.TOPIC_CHOICE, blank=True)
 
     class Meta:
-        verbose_name = 'Student'
+        verbose_name = 'Студент'
+        verbose_name_plural = 'Студенты'
 
     def __str__(self):
         return f'{self.email}'

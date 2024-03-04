@@ -7,6 +7,9 @@ class Institute(models.Model):
     fullname = models.CharField(max_length=150)
 
     # objects = models.Manager()
+    class Meta:
+        verbose_name = 'Институт'
+        verbose_name_plural = 'Институты'
 
     def __str__(self):
         return f"{self.label}"
@@ -18,6 +21,9 @@ class Direction(models.Model):
     institutes = models.ManyToManyField(Institute)
 
     # objects = models.Manager()
+    class Meta:
+        verbose_name = 'Направление'
+        verbose_name_plural = 'Направления'
 
     def __str__(self):
         return f"{self.id} - {self.label}"
@@ -26,6 +32,10 @@ class Direction(models.Model):
 class Department(models.Model):
     institute = models.ForeignKey(Institute, on_delete=models.CASCADE)
     label = models.CharField(max_length=150)
+    
+    class Meta:
+        verbose_name = 'Кафедра'
+        verbose_name_plural = 'Кафедры'
 
     def __str__(self):
         return f"{self.label}"
