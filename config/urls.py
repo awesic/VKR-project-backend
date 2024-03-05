@@ -7,10 +7,10 @@ from django.conf import settings
 from .yasg import urlpatterns as yasg_urlpatterns
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    path("", include('users.urls')),
-    path("", include('directions.urls')),
-    path("", include('main.urls')),
+    path("api/admin/", admin.site.urls),
+    path("api/", include('users.urls')),
+    path("api/", include('directions.urls')),
+    path("api/", include('main.urls')),
 ]
 urlpatterns += yasg_urlpatterns
 # urlpatterns += [re_path(r'^.*', TemplateView.as_view(template_name='index.html'))]
