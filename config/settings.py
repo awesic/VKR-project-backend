@@ -1,15 +1,11 @@
+from datetime import timedelta
 import os
 from pathlib import Path
 from secrets import token_hex
-from django.conf.global_settings import LANGUAGES as DJANGO_LANGUAGES
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY", token_hex(32))
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -30,28 +26,28 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_yasg",
 
     # Custom apps
-    "users",
-    "directions.apps.DirectionsConfig",
-    "main.apps.MainConfig",
+    "apps.users",
+    "apps.directions",
+    "apps.main",
 ]
 
+# CORS
 CORS_ALLOW_ALL_ORIGINS = True
-# CORS_EXPOSE_HEADERS = os.environ.get("CORS_EXPOSE_HEADERS").split(' ')
-# CORS_ALLOW_HEADERS = os.environ.get("CORS_ALLOW_HEADERS").split(' ')
 CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
-
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://localhost http://127.0.0.1:8000').split(' ')
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost http://127.0.0.1:8000').split(' ')
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
 # SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '127.0.0.1')
 # CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
-CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_SAMESITE = 'None'
+# SESSION_COOKIE_SAMESITE = 'None'
+# CSRF_COOKIE_HTTPONLY = True
+# SESSION_COOKIE_HTTPONLY = True
 
 if os.environ.get("PRODUCTION", 'False').lower() == "true":
     CSRF_COOKIE_SECURE = True
@@ -147,12 +143,10 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "ru-ru"
 
 TIME_ZONE = "UTC"
-LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
+
 USE_I18N = True
-USE_L10N = True
+
 USE_TZ = True
-# English default
-LANGUAGES = DJANGO_LANGUAGES
 
 
 # Static files (CSS, JavaScript, Images)
@@ -173,11 +167,20 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
     ]
+}
+
+# SIMPLE_JWT
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
 }
 
 JAZZMIN_SETTINGS = {
@@ -188,21 +191,15 @@ JAZZMIN_SETTINGS = {
     "site_logo": "img/logo_color.png",
     "site_logo_classes": "img-circle",
     "copyright": "VKR-tracker",
-    
-    # List of model admins to search from the search bar, search bar omitted if excluded
-    # If you want to use a single search field you dont need to use a list, you can use a simple string 
     "search_model": ["users.User", "users.Teacher", "users.Student"],
-    # Add a language dropdown into the admin
     # "language_chooser": True,
-    "order_with_respect_to": ["main", "users", "users.User", "users.Teacher", "users.Student"],
-    
-    # Custom links to append to app groups, keyed on app name
+    "order_with_respect_to": ["users", "users.User", "users.Teacher", "users.Student"],
     "custom_links": {
         "users": [{
             "name": "Подтвердить науч рука", 
             "url": "http://127.0.0.1:8000/api/v1/students", 
             "icon": "fas fa-comments",
-            "permissions": ["users.view_users"]
+            "permissions": ["apps.users.view_users"]
         }]
     },
     
@@ -214,7 +211,6 @@ JAZZMIN_SETTINGS = {
         
         "auth.Group": "fas fa-users",
     },
-    # Icons that are used when one is not manually specified
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-circle",
 }
