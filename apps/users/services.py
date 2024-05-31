@@ -1,24 +1,6 @@
 from django.contrib.auth import login
 from . import serializers
-
-
-def register(self, request):
-    serializer = get_role_register_serializer(data=request.data)
-    attr = dict()
-
-    if serializer.is_valid():
-        attr['user'] = serializer.create(serializer.validated_data)
-
-    if attr:
-        login_serializer = self.get_serializer(data=request.data)
-        if login_serializer.is_valid():
-            # login(request, attr['user'])
-            attr['user'] = get_role_view_serializer(data=attr['user'], role=attr['user'].role)
-            attr['access'] = login_serializer.validated_data['access']
-            attr['refresh'] = login_serializer.validated_data['refresh']
-            
-            return attr
-    return None
+from apps.forgejo import services
 
 
 def get_role_view_serializer(data=None, role='admin'):
@@ -41,3 +23,25 @@ def get_role_register_serializer(data=None):
         data = serializers.UserSerializer(data=data)
         
     return data
+
+
+def register(self, request):
+    serializer = get_role_register_serializer(data=request.data)
+    attr = dict()
+
+    if serializer.is_valid():
+        attr['user'] = serializer.create(serializer.validated_data)
+        try:
+            forgejo_user = services.create_forgejo(request.data, user_id=attr['user'].pk)
+            
+            if attr:
+                login_serializer = self.get_serializer(data=request.data)
+                if login_serializer.is_valid():
+                    login(request, attr['user'])
+                    attr['user'] = get_role_view_serializer(data=attr['user'], role=attr['user'].role)
+                    attr['access'] = login_serializer.validated_data['access']
+                    attr['refresh'] = login_serializer.validated_data['refresh']
+                    
+                    return attr
+        except Exception as e: raise
+    return None

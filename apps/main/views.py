@@ -1,5 +1,4 @@
-import datetime
-from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework import generics, views, status, exceptions
 from rest_framework.response import Response
 
@@ -28,7 +27,6 @@ class ThemePreferTeacherChangeView(generics.UpdateAPIView):
         try:
             if 'theme_approved' not in request.data and 'teacher_approved' not in request.data:
                 data = request.data.copy()
-                print(data)
                 if 'theme' in data:
                     data['theme_approved'] = False
 
@@ -36,9 +34,8 @@ class ThemePreferTeacherChangeView(generics.UpdateAPIView):
 
                 if serializer.is_valid():
                     serializer.save()
-                    # student = serializers.StudentSerializer(student)
-                    return Response(serializer.data)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                return Response({"message": serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
             return Response({"message": "Permission denied"}, status=status.HTTP_403_FORBIDDEN)
         except Exception as e:
             return Response({"message": e.args}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -61,7 +58,7 @@ class AdminActionsView(generics.RetrieveUpdateDestroyAPIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"message": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -70,7 +67,7 @@ class AdminActionsView(generics.RetrieveUpdateDestroyAPIView):
             obj = models.User.objects.get(email=kwargs['email'])
             if obj:
                 obj.delete()
-                return Response("User deleted successfully", status=status.HTTP_204_NO_CONTENT)
+                return Response({"message": "User deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
             return Response({"message": "User does not exist"}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"message": "Something went wrong"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -91,7 +88,7 @@ class TeacherPreferThemeChangeView(generics.UpdateAPIView):
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": serializer.error_messages}, status=status.HTTP_400_BAD_REQUEST)
         except:
             return Response({"message": "Something went wrong teacher"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -115,13 +112,9 @@ class StudentsByTeacherView(generics.ListAPIView):
 
     def get_queryset(self):
         try:
-            instance = self.queryset.filter(prefer_teacher=self.request.user.pk, **self.request.query_params.dict()).order_by('-graduate_year')
-            # teacher_approved = self.request.query_params.get('teacher_approved')
-            # graduate_year = self.request.query_params.get('graduate_year', None)
-            # if graduate_year:
-            #     instance = self.queryset.filter(prefer_teacher=self.request.user.pk, graduate_year=graduate_year)
-            # if teacher_approved:
-            #     instance = self.queryset.filter(prefer_teacher=self.request.user.pk, teacher_approved=teacher_approved)
+            instance = self.queryset.filter(
+                prefer_teacher=self.request.user.pk, 
+                **self.request.query_params.dict()).order_by('-graduate_year')
             return instance
         except models.Student.DoesNotExist:
             raise exceptions.NotFound("Student")

@@ -1,5 +1,9 @@
 from django.urls import path
-
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, 
+    TokenRefreshView, 
+    TokenVerifyView
+)
 from .views import (
     UsersListView,
     StudentViewSet,
@@ -9,18 +13,22 @@ from .views import (
     UserRegisterView,
     LoginView,
     LogoutView,
+    CustomTokenObtainPairView
 )
 
 urlpatterns = [
     path('users/', UsersListView.as_view()),
     path('students/', StudentViewSet.as_view({'get': 'list'})),
     path('teachers/', TeacherViewSet.as_view({'get': 'list'})),
-    path('account/profile/', ProfileView.as_view()),
+    path('profile/', ProfileView.as_view()),
 
     path('csrf_cookie', GetCSRFToken.as_view()),
-    # path('auth/student/register', StudentRegisterView.as_view()),
-    # path('auth/teacher/register', TeacherRegisterView.as_view()),
     path('auth/register/', UserRegisterView.as_view()),
     path('auth/login/', LoginView.as_view()),
     path('auth/logout/', LogoutView.as_view()),
+    
+    # JWT token
+    path("auth/token/", CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]

@@ -6,8 +6,8 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
-from .managers import UserManager
 from apps.directions.models import Direction, Institute, Department
+from .managers import UserManager
 
 
 def year_validation(value):
@@ -21,8 +21,8 @@ class User(AbstractUser):
     """
 
     class Roles(models.TextChoices):
-        ADMIN = 'admin', 'Админ',
-        TEACHER = 'teacher', 'Преподаватель',
+        ADMIN = 'admin', 'Админ'
+        TEACHER = 'teacher', 'Преподаватель'
         STUDENT = 'student', 'Студент'
 
     username = None

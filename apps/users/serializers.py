@@ -1,6 +1,7 @@
+from typing import Any, Dict
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -12,12 +13,12 @@ class UserSerializer(serializers.ModelSerializer):
     Default Serializer for user model
     """
     password = serializers.CharField(write_only=True,
-                                     style={'input_type': 'password'}, required=True)  # validators=[validate_password]
+                                     style={'input_type': 'password'}, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, style={'input_type': 'password'}, required=True)
 
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'patronymic', 'password', 'password2', 'role']
+        fields = ['id', 'email', 'first_name', 'last_name', 'patronymic', 'password', 'password2', 'role']
         read_only_fields = ['role']
 
     def validate(self, attrs):
@@ -55,7 +56,7 @@ class TeacherRegisterSerializer(serializers.ModelSerializer):
     TeacherRegisterSerializer for the user create a new teacher user and token for authentication
     """
     password = serializers.CharField(write_only=True,
-                                     style={'input_type': 'password'}, required=True)  # validators=[validate_password]
+                                     style={'input_type': 'password'}, required=True, validators=[validate_password])  
     password2 = serializers.CharField(write_only=True, style={'input_type': 'password'}, required=True)
 
     class Meta:
@@ -92,7 +93,7 @@ class StudentRegisterSerializer(serializers.ModelSerializer):
     StudentRegisterSerializer for the user create a new student user and token for authentication
     """
     password = serializers.CharField(write_only=True,
-                                     style={'input_type': 'password'}, required=True)  # validators=[validate_password]
+                                     style={'input_type': 'password'}, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, style={'input_type': 'password'}, required=True)
 
     class Meta:
@@ -189,4 +190,22 @@ class TeacherSerializer(serializers.ModelSerializer):
 # ==================== AUTH ====================
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     # return a dictionary data with keys "access" and "refresh"
-    pass
+    username_field = 'email'
+    
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
+        credentials = {
+            'email': attrs.get('email'),
+            'password': attrs.get('password'),
+        }
+        user = authenticate(**credentials)
+        if user:
+            if not user.is_active:
+                raise exceptions.AuthenticationFailed(_('Пользователь диактивирован!'))
+            
+            data = {}
+            refresh = self.get_token(user)
+            
+            data['access'] = str(refresh.access_token)
+            data['refresh'] = str(refresh)
+            return data
+        raise exceptions.AuthenticationFailed(_('Не найдено активных пользователей с заданными учетными данными!'))

@@ -2,22 +2,25 @@ from datetime import timedelta
 import os
 from pathlib import Path
 from secrets import token_hex
+from dotenv import load_dotenv
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get("SECRET_KEY", token_hex(32))
+load_dotenv()
+
+SECRET_KEY = os.getenv("SECRET_KEY", token_hex(32))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DEBUG", "True").lower() == "true"
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "*").split(' ')
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", '*').split(" ")
 
 # Application definition
 
 INSTALLED_APPS = [
     "jazzmin",
-    
+
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -26,7 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     "rest_framework",
-    "rest_framework_simplejwt",
+    # "rest_framework_simplejwt",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_yasg",
@@ -35,13 +38,14 @@ INSTALLED_APPS = [
     "apps.users",
     "apps.directions",
     "apps.main",
+    "apps.forgejo",
 ]
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
-CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
+CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
 # SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '127.0.0.1')
 # CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
 # CSRF_COOKIE_SAMESITE = 'None'
@@ -49,7 +53,7 @@ CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:
 # CSRF_COOKIE_HTTPONLY = True
 # SESSION_COOKIE_HTTPONLY = True
 
-if os.environ.get("PRODUCTION", 'False').lower() == "true":
+if os.getenv("PRODUCTION", 'False').lower() == "true":
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = False
 
@@ -59,7 +63,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
+    # "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -91,22 +95,25 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": os.environ.get("ENGINE", "django.db.backends.sqlite3"),
-#         "NAME": os.environ.get("POSTGRES_DB", "db.sqlite3"),
-#         "USER": os.environ.get("POSTGRES_USER", "user"),
-#         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
-#         "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
-#         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
-#     }
-# }
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": os.getenv("PGENGINE", "django.db.backends.sqlite3"),
+        "NAME": os.getenv("PGDATABASE", "db.sqlite3"),
+        "USER": os.getenv("PGUSER", "user"),
+        "PASSWORD": os.getenv("PGPASSWORD", "password"),
+        "HOST": os.getenv("PGHOST", "localhost"),
+        "PORT": os.getenv("PGPORT", "5432"),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
     }
 }
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
 
@@ -122,19 +129,22 @@ ACCOUNT_AUTHENTICATION_METHOD = 'email'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+    # },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+    # },
+    # {
+    #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    # },
 ]
+
+FORGEJO_URL = os.getenv("FORGEJO_URL")
+FORGEJO_TOKEN = os.getenv("FORGEJO_TOKEN")
 
 
 # Internationalization
@@ -154,10 +164,14 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
+    BASE_DIR / "static",
 ]
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -167,20 +181,32 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
-    ]
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+        'rest_framework.parsers.FormParser',
+        'rest_framework.parsers.MultiPartParser'
+    ],
+}
+
+SWAGGER_SETTINGS = {
+   'USE_SESSION_AUTH': False,
+   "DEFAULT_AUTO_SCHEMA_CLASS": "config.yasg.CustomAutoSchema",
 }
 
 # SIMPLE_JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
+
+    "AUTH_HEADER_TYPES": ("JWT",),
 }
 
 JAZZMIN_SETTINGS = {
@@ -197,7 +223,7 @@ JAZZMIN_SETTINGS = {
     "custom_links": {
         "users": [{
             "name": "Подтвердить науч рука", 
-            "url": "http://127.0.0.1:8000/api/v1/students", 
+            "url": "http://127.0.0.1:8000/api/students", 
             "icon": "fas fa-comments",
             "permissions": ["apps.users.view_users"]
         }]
