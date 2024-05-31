@@ -82,7 +82,7 @@ class Student(User):
     institute = models.ForeignKey(Institute, related_name='+', on_delete=models.SET_NULL, blank=True, null=True)
     direction = models.ForeignKey(Direction, related_name='+', on_delete=models.SET_NULL, max_length=150,
                                   blank=True, null=True)
-    group = models.CharField(_("group"), max_length=10, blank=True)
+    group = models.CharField(_("group"), max_length=20, blank=True)
     graduate_year = models.PositiveSmallIntegerField(_("graduate year"),
                                                      validators=[year_validation], blank=True, null=True)
     prefer_teacher = models.ForeignKey(Teacher, related_name='+', on_delete=models.SET_NULL,
