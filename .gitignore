@@ -6,4 +6,5 @@ __pycache__/
 
 */migrations/__pycache__/
 .env
+.env.backend
 db.sqlite3

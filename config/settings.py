@@ -103,9 +103,10 @@ DATABASES = {
         "PASSWORD": os.getenv("PGPASSWORD", "password"),
         "HOST": os.getenv("PGHOST", "localhost"),
         "PORT": os.getenv("PGPORT", "5432"),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
+        # 'OPTIONS': {
+            # 'sslmode': 'verify-full',
+        #     "service": ""
+        # },
     }
 }
 # DATABASES = {
@@ -163,10 +164,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = [
+#     BASE_DIR / "static",
+# ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
