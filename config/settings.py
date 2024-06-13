@@ -1,7 +1,6 @@
 from datetime import timedelta
 import os
 from pathlib import Path
-from secrets import token_hex
 from dotenv import load_dotenv
 
 
@@ -9,12 +8,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv()
 
-SECRET_KEY = os.getenv("SECRET_KEY", token_hex(32))
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", '*').split(" ")
+
+SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 
 # Application definition
 
@@ -46,16 +47,17 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = os.getenv("CORS_ALLOW_CREDENTIALS", "True").lower() == "true"
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
 CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5137 http://127.0.0.1:8000').split(' ')
-# SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '127.0.0.1')
+SESSION_COOKIE_DOMAIN = os.environ.get('SESSION_COOKIE_DOMAIN', '127.0.0.1')
 # CSRF_COOKIE_DOMAIN = os.environ.get('CSRF_COOKIE_DOMAIN', 'localhost')
-# CSRF_COOKIE_SAMESITE = 'None'
-# SESSION_COOKIE_SAMESITE = 'None'
+# CSRF_COOKIE_SAMESITE = None
+# SESSION_COOKIE_SAMESITE = None
 # CSRF_COOKIE_HTTPONLY = True
 # SESSION_COOKIE_HTTPONLY = True
+# CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
 
-if os.getenv("PRODUCTION", 'False').lower() == "true":
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_SECURE = False
+# if os.getenv("PRODUCTION", 'True').lower() == "true":
+#    CSRF_COOKIE_SECURE = True
+#    SESSION_COOKIE_SECURE = True
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -63,7 +65,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
-    # "django.middleware.csrf.CsrfViewMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -98,15 +100,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": os.getenv("PGENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.getenv("PGDATABASE", "db.sqlite3"),
-        "USER": os.getenv("PGUSER", "user"),
-        "PASSWORD": os.getenv("PGPASSWORD", "password"),
+        "NAME": os.getenv("POSTGRES_DB", "db.sqlite3"),
+        "USER": os.getenv("POSTGRES_USER", "user"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "password"),
         "HOST": os.getenv("PGHOST", "localhost"),
         "PORT": os.getenv("PGPORT", "5432"),
-        # 'OPTIONS': {
-            # 'sslmode': 'verify-full',
-        #     "service": ""
-        # },
     }
 }
 # DATABASES = {
@@ -168,10 +166,10 @@ STATIC_URL = 'static/'
 #     BASE_DIR / "static",
 # ]
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATIC_ROOT = BASE_DIR / 'django-static'
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'django-media'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
@@ -180,11 +178,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+        # 'rest_framework.authentication.BasicAuthentication',
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # 'rest_framework.authentication.BasicAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
@@ -208,8 +206,10 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 
+    "SIGNING_KEY": SECRET_KEY,
     "AUTH_HEADER_TYPES": ("JWT",),
 }
+    # "TOKEN_OBTAIN_SERIALIZER": "apps.users.serializers.CustomTokenObtainPairSerializer",
 
 JAZZMIN_SETTINGS = {
     "site_title": "VKR-tracker admin-site",
@@ -225,7 +225,7 @@ JAZZMIN_SETTINGS = {
     "custom_links": {
         "users": [{
             "name": "Подтвердить науч рука", 
-            "url": "http://127.0.0.1:8000/api/students", 
+            "url": "http://127.0.0.1:8001/api/students", 
             "icon": "fas fa-comments",
             "permissions": ["apps.users.view_users"]
         }]

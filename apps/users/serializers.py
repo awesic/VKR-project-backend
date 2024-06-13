@@ -205,7 +205,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             data = {}
             refresh = self.get_token(user)
             
-            data['access'] = str(refresh.access_token)
             data['refresh'] = str(refresh)
+            data['access'] = str(refresh.access_token)
             return data
         raise exceptions.AuthenticationFailed(_('Не найдено активных пользователей с заданными учетными данными!'))

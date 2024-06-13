@@ -93,7 +93,7 @@ class TeacherPreferThemeChangeView(generics.UpdateAPIView):
             return Response({"message": "Something went wrong teacher"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class StatusOptionsView(views.APIView):
+class StatusOptionsView(generics.ListAPIView):
     """
     Returns a list of options for the student status.
     """

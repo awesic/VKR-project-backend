@@ -25,7 +25,6 @@ from .services import (
     delete_forgejo_user,
     get_forgejo_user,
     get_forgejo_repo,
-    retrieve_forgejo_user,
     upload_get_file_to_repo,
     docx_to_html,
     )
@@ -45,7 +44,7 @@ class ForgejoProfileView(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         try:
             user_id = get_user_model().objects.filter(email=kwargs.get('email')).first().pk
-            forgejo_user = retrieve_forgejo_user(kwargs.get('email'))
+            forgejo_user = get_forgejo_user(kwargs.get('email'))
             forgejo_serializer = ForgejoGetProfileSerializer(forgejo_user, many=False)
             return Response(forgejo_serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
@@ -69,35 +68,35 @@ class ForgejoProfileView(generics.RetrieveUpdateDestroyAPIView):
         operation_summary='Create forgejo profile', 
         request_body=ForgejoUserPreCreSerializer, 
         responses={201: ForgejoUserSerializer}))
-@method_decorator(
-    name='get',
-    decorator=swagger_auto_schema(operation_summary='Get forgejo profiles',
-    manual_parameters=[
-        openapi.Parameter('source_id', openapi.IN_QUERY, description="ID of the user's login source to search for", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('login_name', openapi.IN_QUERY, description="user's login name to search for", type=openapi.TYPE_STRING),
-        openapi.Parameter('page', openapi.IN_QUERY, description="page number of results to return (1-based)", type=openapi.TYPE_INTEGER),
-        openapi.Parameter('limit', openapi.IN_QUERY, description="page size of results", type=openapi.TYPE_INTEGER),
-        ],
-    responses={200: ForgejoGetProfileSerializer})
-)
-class ForgejoProfileCreateView(generics.ListCreateAPIView):
+#@method_decorator(
+#    name='get',
+#    decorator=swagger_auto_schema(operation_summary='Get forgejo profiles',
+#    manual_parameters=[
+#        openapi.Parameter('source_id', openapi.IN_QUERY, description="ID of the user's login source to search for", type=openapi.TYPE_INTEGER),
+#        openapi.Parameter('login_name', openapi.IN_QUERY, description="user's login name to search for", type=openapi.TYPE_STRING),
+#        openapi.Parameter('page', openapi.IN_QUERY, description="page number of results to return (1-based)", type=openapi.TYPE_INTEGER),
+#        openapi.Parameter('limit', openapi.IN_QUERY, description="page size of results", type=openapi.TYPE_INTEGER),
+#        ],
+#    responses={200: ForgejoGetProfileSerializer})
+#)
+class ForgejoProfileCreateView(generics.CreateAPIView):
     queryset = ForgejoProfile.objects.all()
     serializer_class = ForgejoUserSerializer
     permission_classes = [IsStudent | IsAdminUser]
     my_tags = ['forgejo']
     
-    def list(self, request, *args, **kwargs):
-        try:
-            params = {}
-            if request.query_params:
-                params = request.query_params.dict()
-            users = get_forgejo_user(params)
-            if users:
-                users = ForgejoGetProfileSerializer(users, many=True)
-                return Response(users.data, status=status.HTTP_200_OK)
-            return Response(users, status=status.HTTP_200_OK)
-        except Exception as e:
-            return Response(e.args, status=status.HTTP_400_BAD_REQUEST)
+    # def list(self, request, *args, **kwargs):
+    #     try:
+    #         params = {}
+    #         if request.query_params:
+    #             params = request.query_params.dict()
+    #         users = get_forgejo_user(params)
+    #         if users:
+    #             users = ForgejoGetProfileSerializer(users, many=True)
+    #             return Response(users.data, status=status.HTTP_200_OK)
+    #         return Response(users, status=status.HTTP_200_OK)
+    #     except Exception as e:
+    #         return Response(e.args, status=status.HTTP_400_BAD_REQUEST)
     
     def create(self, request, *args, **kwargs):
         user_id = get_user_model().objects.filter(
@@ -113,7 +112,7 @@ class ForgejoProfileCreateView(generics.ListCreateAPIView):
 class CreateRepositoryView(generics.UpdateAPIView):
     serializer_class = CreateRepositorySerializer
     queryset = ForgejoProfile.objects.all()
-    permission_classes = [IsStudent | IsAdminUser]
+    permission_classes = [IsStudent | IsAdminUser | IsTeacher]
     my_tags = ['forgejo']
     
     def partial_update(self, request, *args, **kwargs):
@@ -280,6 +279,7 @@ class UploadFileRepositoryView(generics.CreateAPIView,
 class UploadFileToForgejo(generics.CreateAPIView,
                           generics.UpdateAPIView):
     queryset = ForgejoProfile.objects.all()
+    permission_classes = [IsStudent | IsAdminUser | IsTeacher]
     my_tags = ['forgejo']
     
     def create(self, request, *args, **kwargs):

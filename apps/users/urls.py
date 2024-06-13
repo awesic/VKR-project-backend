@@ -9,7 +9,6 @@ from .views import (
     StudentViewSet,
     TeacherViewSet,
     ProfileView,
-    GetCSRFToken,
     UserRegisterView,
     LoginView,
     LogoutView,
@@ -22,7 +21,6 @@ urlpatterns = [
     path('teachers/', TeacherViewSet.as_view({'get': 'list'})),
     path('profile/', ProfileView.as_view()),
 
-    path('csrf_cookie', GetCSRFToken.as_view()),
     path('auth/register/', UserRegisterView.as_view()),
     path('auth/login/', LoginView.as_view()),
     path('auth/logout/', LogoutView.as_view()),

@@ -5,26 +5,10 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, status, generics, views, filters
 from rest_framework.response import Response
 from rest_framework import viewsets
-from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import User, Student, Teacher
 from . import serializers, services
-
-
-def staff_required(view_func):
-    def wrapped_view(view_instance, request, *args, **kwargs):
-        if request.user.is_staff:
-            return view_func(view_instance, request, *args, **kwargs)
-        return Response({'message': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
-    return wrapped_view
-
-@method_decorator(ensure_csrf_cookie, name="dispatch")
-class GetCSRFToken(views.APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request):
-        return Response({"success": "CSRF cookie set"}, status=status.HTTP_200_OK)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -65,6 +49,7 @@ class UserRegisterView(TokenObtainPairView):
 class LoginView(TokenObtainPairView):
     permission_classes = [permissions.AllowAny]
     serializer_class = serializers.CustomTokenObtainPairSerializer
+    # serializer_class = serializers.LoginSerializer
 
     @swagger_auto_schema(tags=['users'], operation_summary='User login')
     def post(self, request):
@@ -90,7 +75,7 @@ class LoginView(TokenObtainPairView):
             return Response({"message": 'Something went wrong'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-class LogoutView(views.APIView):
+class LogoutView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     @swagger_auto_schema(tags=['users'], operation_summary='User logout')
@@ -103,25 +88,26 @@ class LogoutView(views.APIView):
 
 
 class ProfileView(views.APIView):
-    # permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated]
     allow_methods = ['GET']
     @swagger_auto_schema(tags=['users'], operation_summary='Get user info')
     def get(self, request):
         try:
             user = request.user
-            user_profile = User.objects.get(email=user.email)
-            if user.role == User.Roles.TEACHER:
-                user_profile = Teacher.objects.get(email=user.email)
-                user_profile = serializers.TeacherSerializer(user_profile, many=False)
-            elif user.role == User.Roles.STUDENT:
-                user_profile = Student.objects.get(email=user.email)
-                user_profile = serializers.StudentSerializer(user_profile, many=False)
-            else:
-                user_profile = serializers.AdminSerializer(user_profile, many=False)
-            return Response(user_profile.data)
+            user_profile = services.get_role_object_byEmail(user.email, user.role)
+            return Response(user_profile.data, status=status.HTTP_200_OK)
         except:
             return Response({'message': 'Something went wrong'}, status=status.HTTP_404_NOT_FOUND)
 
+            # user_profile = User.objects.get(email=user.email)
+            # if user.role == User.Roles.TEACHER:
+            #     user_profile = Teacher.objects.get(email=user.email)
+            #     user_profile = serializers.TeacherSerializer(user_profile, many=False)
+            # elif user.role == User.Roles.STUDENT:
+            #     user_profile = Student.objects.get(email=user.email)
+            #     user_profile = serializers.StudentSerializer(user_profile, many=False)
+            # else:
+            #     user_profile = serializers.AdminSerializer(user_profile, many=False)
 
 class StudentViewSet(viewsets.ModelViewSet):
     """

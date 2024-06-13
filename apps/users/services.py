@@ -1,6 +1,21 @@
 from django.contrib.auth import login
 from . import serializers
+from .models import User, Student, Teacher
 from apps.forgejo import services
+
+
+def get_role_object_byEmail(email:str, role='admin'):
+    user_profile = User.objects.get(email=email)
+    if role.lower() == 'teacher':
+        user_profile = Teacher.objects.get(email=email)
+        user_profile = serializers.TeacherSerializer(user_profile, many=False)
+    elif role.lower() == 'student':
+        user_profile = Student.objects.get(email=email)
+        user_profile = serializers.StudentSerializer(user_profile, many=False)
+    else:
+        user_profile = serializers.AdminSerializer(user_profile, many=False)
+    
+    return user_profile
 
 
 def get_role_view_serializer(data=None, role='admin'):

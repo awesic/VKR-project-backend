@@ -1,0 +1,58 @@
+###########
+# BUILDER #
+###########
+
+# FROM python:3.11.4-slim-buster as builder
+
+# ENV PYTHONDONTWRITEBYTECODE 1
+# ENV PYTHONUNBUFFERED 1
+
+# WORKDIR /usr/src/app
+
+# RUN apt-get update && \
+#         apt-get install -y --no-install-recommends gcc && pip install --upgrade pip \
+#        && rm -rf /var/lib/apt/lists/*
+
+# COPY ./requirements.txt .
+# # RUN flake8 --ignore=E501,F401 .
+# RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+
+
+#########
+# FINAL #
+#########
+
+FROM python:3.11.4-slim-buster
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+RUN mkdir -p /home/app && \
+        addgroup --system app && adduser --system --group app
+
+# create the appropriate directories
+ENV HOME=/home/app
+ENV APP_HOME=/home/app/backend
+RUN mkdir $APP_HOME && mkdir $APP_HOME/django-static && mkdir $APP_HOME/django-media
+WORKDIR $APP_HOME
+ 
+# COPY --from=builder /usr/src/app/wheels /wheels
+# COPY --from=builder /usr/src/app/requirements.txt .
+COPY ./requirements.txt .
+RUN apt-get update && apt-get install -y --no-install-recommends netcat && \
+        pip install --upgrade pip && \
+        pip install --no-cache-dir -r requirements.txt
+
+# copy project
+COPY ./entrypoint.sh .
+RUN sed -i 's/\r$//g'  $APP_HOME/entrypoint.sh && \
+        chmod +x  $APP_HOME/entrypoint.sh
+
+COPY . $APP_HOME
+# chown all the files to the app user
+RUN chown -R app:app $APP_HOME
+
+# change to the app user
+USER app
+
+ENTRYPOINT ["/home/app/backend/entrypoint.sh"]

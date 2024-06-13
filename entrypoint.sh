@@ -4,7 +4,7 @@ if [ "$DATABASE" = "postgres" ]
 then
     echo "Waiting for postgres..."
 
-    while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
+    while ! nc -z $PGHOST $PGPORT; do
       sleep 0.1
     done
 
@@ -24,6 +24,9 @@ fi
 # python manage.py import_departments
 # echo "Departments imported"
 
-gunicorn config.wsgi
+python manage.py collectstatic --no-input
+
+cp -r static/* django-static/
+# gunicorn config.wsgi --bind 0.0.0.0:8000 --workers 4 --threads 4
 
 exec "$@"

@@ -29,18 +29,13 @@ def create_forgejo_user(kwargs: dict):
     return response.json()
 
 
-def get_forgejo_user(params: dict):
-    '''{
-        source_id: integer($int64)
-        login_name: string
-        page: integer
-        limit: integer
-    }'''
-    payload = params.copy()
+def get_forgejo_user(email: str):
+    payload = {}
+    username = email.split('@')[0]
     payload['token'] = settings.FORGEJO_TOKEN
     response = requests.get(
         # url=f'{settings.FORGEJO_URL}/admin/users',
-        url=f'{settings.FORGEJO_URL}/users/{payload.login_name}',
+        url=f'{settings.FORGEJO_URL}/users/{username}',
         params=payload,
         timeout=60
     )
@@ -49,15 +44,15 @@ def get_forgejo_user(params: dict):
     raise Exception(response.json())
 
 
-def retrieve_forgejo_user(email: str):
-    data = get_forgejo_user({})
-    retrieved_user = {}
-    if data:
-        for user in data:
-            if user.get('email') == email:
-                retrieved_user = user
-                break
-    return retrieved_user
+# def retrieve_forgejo_user(email: str):
+#     data = get_forgejo_user({})
+#     retrieved_user = {}
+#     if data:
+#         for user in data:
+#             if user.get('email') == email:
+#                 retrieved_user = user
+#                 break
+#     return retrieved_user
 
 
 def delete_forgejo_user(username: str, purge=True):

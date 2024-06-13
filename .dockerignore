@@ -1,6 +1,5 @@
 venv
-env
-.env.dev
+.env*
 Dockerfile
 __pycache__
 /*/__pycache__

@@ -4,7 +4,7 @@ from django.urls import path, include
 from .yasg import urlpatterns as yasg_urlpatterns
 
 urlpatterns = [
-    path("api/admin/", admin.site.urls),
+    path("admin/", admin.site.urls),
     
     # user urls
     path("api/", include('apps.users.urls')),

@@ -5,6 +5,5 @@ __pycache__/
 *.py[cod]
 
 */migrations/__pycache__/
-.env
-.env.backend
+.env*
 db.sqlite3
